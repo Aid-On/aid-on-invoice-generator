@@ -425,8 +425,8 @@
             </div>
 
             <div class="form-group">
-                <label for="contractorPhone">電話番号</label>
-                <input type="text" id="contractorPhone" placeholder="090-0000-0000">
+                <label for="displayContractorAddress">メールアドレス</label>
+                <input type="text" id="contractorEmail" placeholder="yamada@example.com">
             </div>
 
             <div class="form-group">
@@ -518,7 +518,7 @@
                         <div class="info-title">請求者</div>
                         <div class="info-line"><strong><span id="displayContractorName">-</span></strong></div>
                         <div class="info-line"><span id="displayContractorAddress">-</span></div>
-                        <div class="info-line">TEL: <span id="displayContractorPhone">-</span></div>
+                        <div class="info-line">Email: <span id="displayContractorEmail">-</span></div>
                     </div>
                 </div>
 
@@ -588,7 +588,7 @@
             const dueDate = document.getElementById('dueDate').value || '未設定';
             const contractorName = document.getElementById('contractorName').value || '未設定';
             const contractorAddress = document.getElementById('contractorAddress').value || '未設定';
-            const contractorPhone = document.getElementById('contractorPhone').value || '未設定';
+            // const contractorPhone = document.getElementById('contractorPhone').value || '未設定';
             const workPeriod = document.getElementById('workPeriod').value || '未設定';
             const workDescription = document.getElementById('workDescription').value || '未設定';
             const notes = document.getElementById('notes').value || '特記事項なし';
@@ -659,8 +659,9 @@
             document.getElementById('displayInvoiceDate').textContent = formatDate(invoiceDate);
             document.getElementById('displayDueDate').textContent = formatDate(dueDate);
             document.getElementById('displayContractorName').textContent = contractorName;
+            const contractorEmail = document.getElementById('contractorEmail').value || '未設定';
             document.getElementById('displayContractorAddress').innerHTML = contractorAddress.replace(/\n/g, '<br>');
-            document.getElementById('displayContractorPhone').textContent = contractorPhone;
+            document.getElementById('displayContractorEmail').textContent = contractorEmail;
             document.getElementById('displayWorkPeriod').textContent = workPeriod;
             document.getElementById('displayWorkDescription').textContent = workDescription;
             document.getElementById('notesContent').innerHTML = notes.replace(/\n/g, '<br>');
@@ -901,7 +902,7 @@
                 contractor: {
                     name: document.getElementById('contractorName').value,
                     address: document.getElementById('contractorAddress').value,
-                    phone: document.getElementById('contractorPhone').value
+                    email: document.getElementById('contractorEmail').value
                 },
                 work: {
                     period: document.getElementById('workPeriod').value,
