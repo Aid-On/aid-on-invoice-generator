@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aid-On向け請求書ジェネレータ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .preview-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .radio-item input[type="radio"] {
+            width: auto;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .print-btn, .download-btn {
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .print-btn {
+            background: #28a745;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .download-btn {
+            background: #007bff;
+        }
+
+        .download-btn:hover {
+            background: #0056b3;
+        }
+
+        .download-dropdown {
+            position: relative;
+            display: inline-block;
+            flex: 1;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 8px;
+            top: 100%;
+            left: 0;
+            right: 0;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border-radius: 8px;
+            margin: 2px;
+            transition: background 0.3s ease;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .show {
+            display: block;
+        }
+
+        .invoice {
+            border: 1px solid #ddd;
+            padding: 40px;
+            background: white;
+            min-height: 500px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .invoice-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .company-info, .contractor-info {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .info-line {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .work-details {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .amount-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .amount-table th, .amount-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .amount-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .total-row {
+            font-weight: bold;
+            font-size: 16px;
+            background: #f0f0f0;
+        }
+
+        .invoice-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                display: block;
+            }
+            .input-section {
+                display: none;
+            }
+            .preview-section {
+                box-shadow: none;
+                padding: 0;
+            }
+            .action-buttons {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .invoice-info {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h1>請求書情報入力</h1>
+            
+            <div class="form-group">
+                <label for="invoiceNumber">請求書番号</label>
+                <input type="text" id="invoiceNumber" placeholder="例: INV-2025-001">
+            </div>
+
+            <div class="form-group">
+                <label for="invoiceDate">請求日</label>
+                <input type="date" id="invoiceDate">
+            </div>
+
+            <div class="form-group">
+                <label for="dueDate">支払期限</label>
+                <input type="date" id="dueDate">
+            </div>
+
+            <div class="form-group">
+                <label for="contractorName">請求者名</label>
+                <input type="text" id="contractorName" placeholder="山田太郎">
+            </div>
+
+            <div class="form-group">
+                <label for="contractorAddress">請求者住所</label>
+                <textarea id="contractorAddress" placeholder="〒000-0000&#10;東京都渋谷区..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="contractorPhone">電話番号</label>
+                <input type="text" id="contractorPhone" placeholder="090-0000-0000">
+            </div>
+
+            <div class="form-group">
+                <label for="workPeriod">作業期間</label>
+                <input type="text" id="workPeriod" placeholder="2025年6月1日〜2025年6月30日">
+            </div>
+
+            <div class="form-group">
+                <label>請求方式</label>
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <input type="radio" id="hourly" name="billingType" value="hourly" checked>
+                        <label for="hourly">時間制</label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="monthly" name="billingType" value="monthly">
+                        <label for="monthly">月額制</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="hourlyFields">
+                <div class="form-group">
+                    <label for="workHours">作業時間（時間）</label>
+                    <input type="number" id="workHours" placeholder="60" step="0.5">
+                </div>
+
+                <div class="form-group">
+                    <label for="hourlyRate">時給（円）</label>
+                    <input type="number" id="hourlyRate" placeholder="1200">
+                </div>
+            </div>
+
+            <div id="monthlyFields" style="display: none;">
+                <div class="form-group">
+                    <label for="monthlyAmount">月額料金（税抜、円）</label>
+                    <input type="number" id="monthlyAmount" placeholder="70000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="workDescription">作業内容</label>
+                <textarea id="workDescription" placeholder="Webサイト制作補助、データ入力、資料作成など"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">備考</label>
+                <textarea id="notes" placeholder="お振込先：○○銀行 ○○支店 普通 1234567"></textarea>
+            </div>
+
+            <button class="generate-btn" onclick="generateInvoice()">請求書を生成</button>
+        </div>
+
+        <div class="preview-section">
+            <div class="action-buttons">
+                <button class="print-btn" onclick="printInvoice()">印刷・PDF保存</button>
+                <div class="download-dropdown">
+                    <button class="download-btn" onclick="toggleDropdown()">ダウンロード ▼</button>
+                    <div id="downloadDropdown" class="dropdown-content">
+                        <a href="#" onclick="downloadHTML()">HTMLファイル</a>
+                        <a href="#" onclick="downloadData()">請求データ (JSON)</a>
+                        <a href="#" onclick="copyToClipboard()">クリップボードにコピー</a>
+                    </div>
+                </div>
+            </div>
+            <div class="invoice" id="invoicePreview">
+                <div class="invoice-header">
+                    <div class="invoice-title">請 求 書</div>
+                    <div style="margin-top: 10px; color: #666;">Invoice</div>
+                </div>
+
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <div>請求書番号: <span id="displayInvoiceNumber">-</span></div>
+                    <div>請求日: <span id="displayInvoiceDate">-</span></div>
+                    <div>支払期限: <span id="displayDueDate">-</span></div>
+                </div>
+
+                <div class="invoice-info">
+                    <div class="company-info">
+                        <div class="info-title">請求先</div>
+                        <div class="info-line"><strong>株式会社Aid-On</strong></div>
+                        <div class="info-line">代表取締役 本寺広海 様</div>
+                        <div class="info-line">〒880-0804</div>
+                        <div class="info-line">宮崎県宮崎市広島2丁目11番8号</div>
+                        <div class="info-line">パレインヴィラ69-302号</div>
+                    </div>
+
+                    <div class="contractor-info">
+                        <div class="info-title">請求者</div>
+                        <div class="info-line"><strong><span id="displayContractorName">-</span></strong></div>
+                        <div class="info-line"><span id="displayContractorAddress">-</span></div>
+                        <div class="info-line">TEL: <span id="displayContractorPhone">-</span></div>
+                    </div>
+                </div>
+
+                <div class="work-details">
+                    <div class="info-title">作業詳細</div>
+                    <div class="info-line">作業期間: <span id="displayWorkPeriod">-</span></div>
+                    <div class="info-line" id="workHoursDisplay">作業時間: - 時間</div>
+                    <div class="info-line">作業内容: <span id="displayWorkDescription">-</span></div>
+                </div>
+
+                <table class="amount-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">項目</th>
+                            <th>数量</th>
+                            <th>単価</th>
+                            <th>金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableBody">
+                        <!-- 動的に生成 -->
+                    </tbody>
+                </table>
+
+                <div id="displayNotes" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>備考:</strong><br>
+                    <span id="notesContent">-</span>
+                </div>
+
+                <div class="invoice-footer">
+                    <div>この請求書は業務委託契約に基づいて発行されています</div>
+                    <div>ご不明な点がございましたらお気軽にお問い合わせください</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 今日の日付を設定
+        document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
+        
+        // 30日後を支払期限に設定
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+
+        // 請求方式の切り替え
+        document.querySelectorAll('input[name="billingType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const hourlyFields = document.getElementById('hourlyFields');
+                const monthlyFields = document.getElementById('monthlyFields');
+                
+                if (this.value === 'hourly') {
+                    hourlyFields.style.display = 'block';
+                    monthlyFields.style.display = 'none';
+                } else {
+                    hourlyFields.style.display = 'none';
+                    monthlyFields.style.display = 'block';
+                }
+            });
+        });
+
+        function generateInvoice() {
+            // 基本情報の取得
+            const invoiceNumber = document.getElementById('invoiceNumber').value || '未設定';
+            const invoiceDate = document.getElementById('invoiceDate').value || '未設定';
+            const dueDate = document.getElementById('dueDate').value || '未設定';
+            const contractorName = document.getElementById('contractorName').value || '未設定';
+            const contractorAddress = document.getElementById('contractorAddress').value || '未設定';
+            const contractorPhone = document.getElementById('contractorPhone').value || '未設定';
+            const workPeriod = document.getElementById('workPeriod').value || '未設定';
+            const workDescription = document.getElementById('workDescription').value || '未設定';
+            const notes = document.getElementById('notes').value || '特記事項なし';
+
+            // 請求方式の判定
+            const billingType = document.querySelector('input[name="billingType"]:checked').value;
+            let subtotal = 0;
+            let tableBody = '';
+
+            if (billingType === 'hourly') {
+                const workHours = parseFloat(document.getElementById('workHours').value) || 0;
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+                subtotal = workHours * hourlyRate;
+                
+                tableBody = `
+                    <tr>
+                        <td style="text-align: left;">業務委託料（時間制）</td>
+                        <td>${workHours}時間</td>
+                        <td>¥${hourlyRate.toLocaleString()}</td>
+                        <td>¥${subtotal.toLocaleString()}</td>
+                    </tr>
+                `;
+                
+                document.getElementById('workHoursDisplay').style.display = 'block';
+                document.getElementById('workHoursDisplay').innerHTML = `作業時間: ${workHours} 時間`;
+            } else {
+                const monthlyAmount = parseFloat(document.getElementById('monthlyAmount').value) || 0;
+                subtotal = monthlyAmount;
+                
+                tableBody = `
+                    <tr>
+                        <td style="text-align: left;">業務委託料（月額制）</td>
+                        <td>1ヶ月</td>
+                        <td>¥${monthlyAmount.toLocaleString()}</td>
+                        <td>¥${subtotal.toLocaleString()}</td>
+                    </tr>
+                `;
+                
+                document.getElementById('workHoursDisplay').style.display = 'none';
+            }
+
+            const tax = Math.floor(subtotal * 0.1);
+            const total = subtotal + tax;
+
+            tableBody += `
+                <tr>
+                    <td style="text-align: left;">小計</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>¥${subtotal.toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">消費税（10%）</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>¥${tax.toLocaleString()}</td>
+                </tr>
+                <tr class="total-row">
+                    <td style="text-align: left;"><strong>合計</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><strong>¥${total.toLocaleString()}</strong></td>
+                </tr>
+            `;
+
+            // プレビューの更新
+            document.getElementById('displayInvoiceNumber').textContent = invoiceNumber;
+            document.getElementById('displayInvoiceDate').textContent = formatDate(invoiceDate);
+            document.getElementById('displayDueDate').textContent = formatDate(dueDate);
+            document.getElementById('displayContractorName').textContent = contractorName;
+            document.getElementById('displayContractorAddress').innerHTML = contractorAddress.replace(/\n/g, '<br>');
+            document.getElementById('displayContractorPhone').textContent = contractorPhone;
+            document.getElementById('displayWorkPeriod').textContent = workPeriod;
+            document.getElementById('displayWorkDescription').textContent = workDescription;
+            document.getElementById('notesContent').innerHTML = notes.replace(/\n/g, '<br>');
+            document.getElementById('invoiceTableBody').innerHTML = tableBody;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '未設定';
+            const date = new Date(dateString);
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+
+        // ドロップダウンの表示/非表示
+        function toggleDropdown() {
+            document.getElementById("downloadDropdown").classList.toggle("show");
+        }
+
+        // ドロップダウン外をクリックした時に閉じる
+        window.onclick = function(event) {
+            if (!event.target.matches('.download-btn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // 印刷機能（PDF保存可能）
+        function printInvoice() {
+            window.print();
+        }
+
+        // HTMLダウンロード機能
+        function downloadHTML() {
+            const invoiceNumber = document.getElementById('invoiceNumber').value || 'invoice';
+            const contractorName = document.getElementById('contractorName').value || 'contractor';
+            const fileName = `請求書_${invoiceNumber}_${contractorName}_${new Date().toISOString().split('T')[0]}.html`;
+            
+            // 請求書のHTMLを取得
+            const invoiceHTML = document.getElementById('invoicePreview').outerHTML;
+            
+            // 完全なHTMLドキュメントを作成
+            const fullHTML = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>請求書 - ${invoiceNumber}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: white;
+            color: #333;
+        }
+        .invoice {
+            border: 1px solid #ddd;
+            padding: 40px;
+            background: white;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .invoice-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        .company-info, .contractor-info {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .info-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .info-line {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .work-details {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .amount-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .amount-table th, .amount-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        .amount-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        .amount-table th:first-child {
+            text-align: left;
+        }
+        .amount-table td:first-child {
+            text-align: left;
+        }
+        .total-row {
+            font-weight: bold;
+            font-size: 16px;
+            background: #f0f0f0;
+        }
+        .invoice-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        @media print {
+            body { margin: 0; padding: 10px; }
+            .invoice { border: none; box-shadow: none; }
+        }
+        @media (max-width: 768px) {
+            .invoice-info { grid-template-columns: 1fr; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    ${invoiceHTML}
+    <div style="text-align: center; margin-top: 30px; color: #666; font-size: 12px;">
+        <p>このファイルは Aid-On向け請求書ジェネレータで生成されました</p>
+        <p>生成日時: ${new Date().toLocaleString('ja-JP')}</p>
+    </div>
+</body>
+</html>`;
+            
+            // Blobを作成してダウンロード
+            const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // ドロップダウンを閉じる
+            document.getElementById("downloadDropdown").classList.remove("show");
+            
+            alert('HTMLファイルをダウンロードしました。ブラウザで開いて印刷からPDF保存もできます。');
+        }
+
+        // 請求データをJSONでダウンロード
+        function downloadData() {
+            const invoiceData = {
+                invoiceNumber: document.getElementById('invoiceNumber').value,
+                invoiceDate: document.getElementById('invoiceDate').value,
+                dueDate: document.getElementById('dueDate').value,
+                contractor: {
+                    name: document.getElementById('contractorName').value,
+                    address: document.getElementById('contractorAddress').value,
+                    phone: document.getElementById('contractorPhone').value
+                },
+                work: {
+                    period: document.getElementById('workPeriod').value,
+                    description: document.getElementById('workDescription').value,
+                    billingType: document.querySelector('input[name="billingType"]:checked').value
+                },
+                billing: {},
+                notes: document.getElementById('notes').value,
+                generatedAt: new Date().toISOString()
+            };
+
+            // 請求方式に応じてデータを追加
+            if (invoiceData.work.billingType === 'hourly') {
+                invoiceData.billing = {
+                    workHours: parseFloat(document.getElementById('workHours').value) || 0,
+                    hourlyRate: parseFloat(document.getElementById('hourlyRate').value) || 0
+                };
+            } else {
+                invoiceData.billing = {
+                    monthlyAmount: parseFloat(document.getElementById('monthlyAmount').value) || 0
+                };
+            }
+
+            const fileName = `請求データ_${invoiceData.invoiceNumber}_${new Date().toISOString().split('T')[0]}.json`;
+            const blob = new Blob([JSON.stringify(invoiceData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            document.getElementById("downloadDropdown").classList.remove("show");
+            alert('請求データをJSONファイルでダウンロードしました。');
+        }
+
+        // クリップボードにコピー
+        async function copyToClipboard() {
+            const invoiceElement = document.getElementById('invoicePreview');
+            const invoiceText = invoiceElement.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(invoiceText);
+                alert('請求書の内容をクリップボードにコピーしました。');
+            } catch (err) {
+                // フォールバック: テキストエリアを使用
+                const textArea = document.createElement('textarea');
+                textArea.value = invoiceText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('請求書の内容をクリップボードにコピーしました。');
+            }
+            
+            document.getElementById("downloadDropdown").classList.remove("show");
+        }
+
+        // 初期表示
+        generateInvoice();
+    </script>
+</body>
+</html>
